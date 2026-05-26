@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batch Calculator — Zomer 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e0e;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0ede8;
+    --muted: rgba(240,237,232,0.45);
+    --hint: rgba(240,237,232,0.25);
+    --accent: #c8f55a;
+    --accent-dim: rgba(200,245,90,0.12);
+    --accent-text: #0e0e0e;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .header {
+    padding: 2.5rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .header-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-name {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 80px);
+  }
+
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0;
+  }
+
+  .sidebar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--hint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tab-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 0.6rem 1.25rem;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s, background 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  .tab-btn.active {
+    color: var(--text);
+    border-left-color: var(--accent);
+    background: rgba(200,245,90,0.05);
+  }
+
+  .tab-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: rgba(200,245,90,0.15);
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .main {
+    padding: 2rem;
+    max-width: 680px;
+  }
+
+  .cocktail-header {
+    margin-bottom: 1.75rem;
+  }
+
+  .cocktail-title {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .cocktail-sub {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .scale-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1.75rem;
+    padding: 1.25rem;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+  }
+
+  .scale-field { display: flex; flex-direction: column; gap: 5px; }
+
+  .scale-field label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--hint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .scale-field input {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 8px 10px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+
+  .scale-field input::-webkit-outer-spin-button,
+  .scale-field input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .scale-field input:focus { border-color: var(--accent); }
+
+  .hint-text {
+    font-size: 12px;
+    color: var(--hint);
+    margin-bottom: 1.25rem;
+    padding-left: 2px;
+  }
+
+  .ing-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.25rem;
+  }
+
+  .ing-table thead th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--hint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 400;
+    padding: 0 0 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ing-table thead th:last-child { text-align: right; }
+
+  .ing-table tbody tr:last-child td { border-bottom: none; }
+
+  .ing-table td {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    vertical-align: middle;
+  }
+
+  .ing-table td:last-child { text-align: right; }
+
+  .ing-input-wrap { display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+
+  .ing-input {
+    background: var(--surface2);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 8px;
+    width: 90px;
+    text-align: right;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    -moz-appearance: textfield;
+  }
+
+  .ing-input::-webkit-outer-spin-button,
+  .ing-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .ing-input:hover { border-color: var(--border2); }
+  .ing-input:focus { border-color: var(--accent); background: rgba(200,245,90,0.05); }
+
+  .ing-unit { font-size: 12px; color: var(--hint); font-family: 'DM Mono', monospace; }
+
+  .ing-special { color: var(--hint); font-style: italic; font-size: 13px; }
+
+  .totals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .total-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+  }
+
+  .total-card.accent {
+    background: var(--accent-dim);
+    border-color: rgba(200,245,90,0.2);
+  }
+
+  .total-card label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--hint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .total-card.accent label { color: rgba(200,245,90,0.5); }
+
+  .total-value {
+    font-size: 22px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: -0.02em;
+  }
+
+  .total-card.accent .total-value { color: var(--accent); }
+
+  .note-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 600px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); padding: 1rem 0; display: flex; overflow-x: auto; }
+    .tab-btn { white-space: nowrap; border-left: none; border-bottom: 2px solid transparent; padding: 0.5rem 1rem; }
+    .tab-btn.active { border-bottom-color: var(--accent); border-left-color: transparent; }
+    .sidebar-label { display: none; }
+    .main { padding: 1.25rem; }
+    .scale-row { grid-template-columns: 1fr 1fr; }
+    .totals { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">Batchen cocktails</div>
+  <div class="header-name">Zomer 2026</div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-label">Cocktails</div>
+    <div id="tabs"></div>
+  </nav>
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+const cocktails = [
+  {
+    id: "lychee",
+    name: "Lychee negroni",
+    tags: ["vriezer"],
+    base: 10,
+    note: "Voeg kittelbloemen toe aan grote weckpot. Roer door en laat 60 min trekken of tot inhoud paars is (donkerder dan je denkt). Filter bloemen eruit, dan batchen.",
+    ingredients: [
+      { name: "Bombay gin", ml: 300 },
+      { name: "Lychee likeur", ml: 225 },
+      { name: "St. Germain", ml: 225 },
+      { name: "Martini bianco", ml: 150 },
+      { name: "Suiker siroop", ml: 50 },
+      { name: "Water", ml: 75 },
+    ],
+    batchPerGlass: 105,
+    specials: ["Snuf zout", "Kittelbloemen (15–20 per 10 glazen)"]
+  },
+  {
+    id: "thaibasil",
+    name: "Thai basil smash",
+    tags: [],
+    base: 10,
+    note: "Per glas: 75 ml batch + 30 ml limoen + 2 gescheurde blaadjes Thai basil.",
+    ingredients: [
+      { name: "Thai basil infused Hendricks", ml: 500 },
+      { name: "St. Germain", ml: 150 },
+      { name: "Suikerwater", ml: 100 },
+    ],
+    batchPerGlass: 75,
+    specials: ["Snuf zout", "30 ml limoen + 2 blaadjes per glas"]
+  },
+  {
+    id: "rabarber",
+    name: "Rabarber straissand",
+    tags: [],
+    base: 10,
+    note: "Per glas: 95 ml batch + 10 ml citroen + foamee.",
+    ingredients: [
+      { name: "Vodka", ml: 500 },
+      { name: "Rabarber aardbei cordial", ml: 450 },
+    ],
+    batchPerGlass: 95,
+    specials: ["Snuf zout", "10 ml citroen + foamee per glas"]
+  },
+  {
+    id: "applepear",
+    name: "Apple pear fizz",
+    tags: [],
+    base: 10,
+    note: "Per glas: 85 ml batch + 15 ml citroen + bruiswater.",
+    ingredients: [
+      { name: "Busnel Calvados", ml: 450 },
+      { name: "St. Germain", ml: 250 },
+      { name: "Peersiroop", ml: 250 },
+    ],
+    batchPerGlass: 85,
+    specials: ["Snuf zout", "15 ml citroen + bruiswater per glas"]
+  },
+  {
+    id: "sultans",
+    name: "Sultans of swing",
+    tags: ["vriezer"],
+    base: 10,
+    note: "Per glas: 90 ml batch + Maraschino kers.",
+    ingredients: [
+      { name: "Reposado tequila", ml: 400 },
+      { name: "PX Sherry", ml: 350 },
+      { name: "Water", ml: 75 },
+      { name: "Suiker siroop", ml: 50 },
+    ],
+    batchPerGlass: 90,
+    specials: ["5 dashes Angostura bitters (per 10 glazen)", "Snuf zout", "Maraschino kers per glas"]
+  },
+  {
+    id: "coco",
+    name: "Coco jambo",
+    tags: [],
+    base: 10,
+    note: "Per glas: 80 ml batch + 30 ml limoen.",
+    ingredients: [
+      { name: "Malibu", ml: 500 },
+      { name: "Perziklikeur", ml: 200 },
+      { name: "Suikersiroop", ml: 100 },
+    ],
+    batchPerGlass: 80,
+    specials: ["Snuf zout", "30 ml limoen per glas"]
+  }
+];
+
+let active = 0;
+let scale = 1.0;
+
+function r(n, decimals = 1) {
+  const f = Math.pow(10, decimals);
+  return Math.round(n * f) / f;
+}
+
+function fmt(ml) {
+  if (ml >= 1000) return (ml / 1000).toFixed(2).replace(/\.?0+$/, '') + ' L';
+  return r(ml) + ' ml';
+}
+
+function renderTabs() {
+  document.getElementById('tabs').innerHTML = cocktails.map((c, i) =>
+    `<button class="tab-btn${i === active ? ' active' : ''}" onclick="setActive(${i})">
+      ${c.name}
+      ${c.tags.map(t => `<span class="tab-badge">${t}</span>`).join('')}
+    </button>`
+  ).join('');
+}
+
+function renderMain() {
+  const c = cocktails[active];
+  const glasses = r(c.base * scale, 1);
+  const baseTotalMl = c.ingredients.reduce((s, i) => s + i.ml, 0);
+  const scaledTotal = r(baseTotalMl * scale);
+  const batchTotal = r(c.batchPerGlass * glasses);
+
+  const ingRows = c.ingredients.map((ing, idx) => `
+    <tr>
+      <td>${ing.name}</td>
+      <td>
+        <div class="ing-input-wrap">
+          <input class="ing-input" type="number" min="0" step="any"
+            value="${r(ing.ml * scale)}"
+            data-idx="${idx}"
+            data-base="${ing.ml}"
+            oninput="lockToIng(this)"
+          >
+          <span class="ing-unit">ml</span>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  const specialRows = c.specials.map(s => `
+    <tr><td class="ing-special">${s}</td><td></td></tr>`).join('');
+
+  document.getElementById('main').innerHTML = `
+    <div class="cocktail-header">
+      <div class="cocktail-title">${c.name}</div>
+      <div class="cocktail-sub">basisrecept × ${c.base} glazen</div>
+    </div>
+
+    <div class="scale-row">
+      <div class="scale-field">
+        <label>Aantal glazen</label>
+        <input type="number" min="1" step="1" id="inp-glasses" value="${glasses}"
+          oninput="scaleByGlasses(this.value)">
+      </div>
+      <div class="scale-field">
+        <label>Schaalfactor</label>
+        <input type="number" min="0.1" step="0.5" id="inp-factor" value="${r(scale)}"
+          oninput="scaleByFactor(this.value)">
+      </div>
+      <div class="scale-field">
+        <label>Totaal batch</label>
+        <input type="number" min="0" step="any" id="inp-total" value="${scaledTotal}"
+          oninput="scaleByTotal(this.value, ${baseTotalMl})">
+      </div>
+    </div>
+
+    <p class="hint-text">Pas ook een ingrediënt hieronder aan — de rest past automatisch mee.</p>
+
+    <table class="ing-table">
+      <thead>
+        <tr><th>Ingrediënt</th><th style="text-align:right">Hoeveelheid</th></tr>
+      </thead>
+      <tbody>
+        ${ingRows}
+        ${specialRows}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div class="total-card accent">
+        <label>Totaal batch</label>
+        <div class="total-value" id="stat-total">${fmt(scaledTotal)}</div>
+      </div>
+      <div class="total-card">
+        <label>Uitschenken (${r(c.batchPerGlass * scale)} ml/glas)</label>
+        <div class="total-value" id="stat-serve">${fmt(batchTotal)}</div>
+      </div>
+    </div>
+
+    ${c.note ? `<div class="note-box">${c.note}</div>` : ''}
+  `;
+}
+
+function setActive(i) {
+  active = i;
+  scale = 1.0;
+  renderTabs();
+  renderMain();
+}
+
+function scaleByGlasses(val) {
+  const v = parseFloat(val);
+  if (!isNaN(v) && v > 0) {
+    scale = v / cocktails[active].base;
+    syncInputs();
+  }
+}
+
+function scaleByFactor(val) {
+  const v = parseFloat(val);
+  if (!isNaN(v) && v > 0) {
+    scale = v;
+    syncInputs();
+  }
+}
+
+function scaleByTotal(val, baseTotalMl) {
+  const v = parseFloat(val);
+  if (!isNaN(v) && v > 0 && baseTotalMl > 0) {
+    scale = v / baseTotalMl;
+    syncInputs(true);
+  }
+}
+
+function lockToIng(input) {
+  const v = parseFloat(input.value);
+  const baseMl = parseFloat(input.dataset.base);
+  if (!isNaN(v) && v > 0 && baseMl > 0) {
+    scale = v / baseMl;
+    syncInputs(false, parseInt(input.dataset.idx));
+  }
+}
+
+function syncInputs(skipTotal = false, skipIngIdx = -1) {
+  const c = cocktails[active];
+  const glasses = r(c.base * scale, 1);
+  const baseTotalMl = c.ingredients.reduce((s, i) => s + i.ml, 0);
+  const scaledTotal = r(baseTotalMl * scale);
+  const batchTotal = r(c.batchPerGlass * glasses);
+
+  const gEl = document.getElementById('inp-glasses');
+  const fEl = document.getElementById('inp-factor');
+  const tEl = document.getElementById('inp-total');
+  if (gEl) gEl.value = glasses;
+  if (fEl) fEl.value = r(scale);
+  if (!skipTotal && tEl) tEl.value = scaledTotal;
+
+  document.querySelectorAll('.ing-input').forEach(inp => {
+    const idx = parseInt(inp.dataset.idx);
+    if (idx === skipIngIdx) return;
+    inp.value = r(c.ingredients[idx].ml * scale);
+  });
+
+  const st = document.getElementById('stat-total');
+  const ss = document.getElementById('stat-serve');
+  if (st) st.textContent = fmt(scaledTotal);
+  if (ss) {
+    ss.closest('.total-card').querySelector('label').textContent =
+      `Uitschenken (${r(c.batchPerGlass * scale)} ml/glas)`;
+    ss.textContent = fmt(batchTotal);
+  }
+}
+
+renderTabs();
+renderMain();
+</script>
+</body>
+</html>
