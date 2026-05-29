@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batch Calculator - Casa Chow</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#f0ecc8;
+  --green:#3a6b47;
+  --green-dark:#2c5238;
+  --gold:#c8a020;
+  --white:#fff;
+  --white-muted:rgba(255,255,255,0.72);
+  --white-hint:rgba(255,255,255,0.38);
+  --border:rgba(255,255,255,0.13);
+  --border2:rgba(255,255,255,0.28);
+  --surface:rgba(0,0,0,0.15);
+  --surface2:rgba(0,0,0,0.22);
+  --radius:8px;--radius-lg:14px;
+}
+body{background:var(--cream);color:var(--green-dark);font-family:DM Sans,sans-serif;font-size:15px;line-height:1.5;min-height:100vh}
+.header{background:var(--cream);padding:1.1rem 2rem;display:flex;align-items:center;gap:1.25rem;border-bottom:2px solid rgba(44,82,56,0.18)}
+.header-logo{height:54px;width:auto}
+.header-text{display:flex;flex-direction:column;gap:1px}
+.header-brand{font-family:Bebas Neue,sans-serif;font-size:22px;letter-spacing:.1em;color:var(--green-dark);line-height:1}
+.header-sub{font-family:DM Mono,monospace;font-size:10px;color:rgba(44,82,56,0.45);text-transform:uppercase;letter-spacing:.1em}
+.layout{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 74px)}
+.sidebar{background:var(--cream);padding:1.5rem 0;border-right:2px solid rgba(44,82,56,0.13)}
+.sidebar-label{font-family:Bebas Neue,sans-serif;font-size:13px;letter-spacing:.14em;color:rgba(44,82,56,0.38);padding:0 1.25rem;margin-bottom:.4rem}
+.sidebar-label.second{margin-top:1.5rem}
+.tab-btn{display:block;width:100%;text-align:left;background:none;border:none;color:rgba(44,82,56,0.55);font-family:DM Sans,sans-serif;font-size:13.5px;padding:.55rem 1.25rem;cursor:pointer;transition:color .12s,background .12s;border-left:3px solid transparent}
+.tab-btn:hover{color:var(--green-dark);background:rgba(58,107,71,0.08)}
+.tab-btn.active{color:var(--green-dark);border-left-color:var(--green);background:rgba(58,107,71,0.1);font-weight:500}
+.tab-badge{font-family:DM Mono,monospace;font-size:9px;background:rgba(58,107,71,0.12);color:var(--green);padding:1px 5px;border-radius:3px;margin-left:5px;vertical-align:middle}
+.main{background:var(--green);padding:2rem;max-width:660px;color:var(--white)}
+.page-title{font-family:Bebas Neue,sans-serif;font-size:32px;letter-spacing:.06em;color:var(--gold);margin-bottom:3px;text-transform:uppercase}
+.page-sub{font-family:DM Mono,monospace;font-size:11px;color:var(--white-hint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.75rem}
+.scale-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem;padding:1.2rem;background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border)}
+.scale-field{display:flex;flex-direction:column;gap:5px}
+.scale-field label{font-family:DM Mono,monospace;font-size:10px;color:var(--white-hint);text-transform:uppercase;letter-spacing:.08em}
+.scale-field input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--white);font-family:DM Mono,monospace;font-size:15px;font-weight:500;padding:8px 10px;width:100%;outline:none;transition:border-color .15s;-moz-appearance:textfield}
+.scale-field input::-webkit-outer-spin-button,.scale-field input::-webkit-inner-spin-button{-webkit-appearance:none}
+.scale-field input:focus{border-color:var(--gold)}
+.hint-text{font-size:12px;color:var(--white-hint);margin-bottom:1.2rem}
+.ing-table{width:100%;border-collapse:collapse;margin-bottom:1.25rem}
+.ing-table thead th{font-family:DM Mono,monospace;font-size:10px;color:var(--white-hint);text-transform:uppercase;letter-spacing:.08em;font-weight:400;padding:0 0 10px;text-align:left;border-bottom:1px solid var(--border)}
+.ing-table thead th:last-child{text-align:right}
+.ing-table tbody tr:last-child td{border-bottom:none}
+.ing-table td{padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle;color:var(--white-muted)}
+.ing-table td:first-child{color:var(--white)}
+.ing-table td:last-child{text-align:right}
+.ing-input-wrap{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.ing-input{background:var(--surface2);border:1px solid transparent;border-radius:6px;color:var(--white);font-family:DM Mono,monospace;font-size:14px;font-weight:500;padding:4px 8px;width:90px;text-align:right;outline:none;transition:border-color .15s,background .15s;-moz-appearance:textfield}
+.ing-input::-webkit-outer-spin-button,.ing-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.ing-input:hover{border-color:var(--border2)}
+.ing-input:focus{border-color:var(--gold);background:rgba(200,160,32,0.08)}
+.ing-unit{font-size:12px;color:var(--white-hint);font-family:DM Mono,monospace}
+.ing-special{color:var(--white-hint);font-style:italic;font-size:13px}
+.note-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:var(--radius);padding:1rem 1.25rem;font-size:13px;color:var(--white-muted);line-height:1.7}
+.juice-section-title{font-family:Bebas Neue,sans-serif;font-size:15px;color:var(--gold);letter-spacing:.1em;margin:1.5rem 0 .75rem;text-transform:uppercase}
+.juice-output-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.juice-output{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem 1rem}
+.juice-output label{font-family:DM Mono,monospace;font-size:10px;color:var(--white-hint);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px}
+.juice-output .val{font-family:DM Mono,monospace;font-size:18px;font-weight:600;color:var(--white)}
+.water-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem}
+.water-label-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.6rem}
+.water-label-row span{font-family:DM Mono,monospace;font-size:10px;color:var(--white-hint);text-transform:uppercase;letter-spacing:.08em}
+.water-label-row .water-total{color:var(--gold);font-size:13px}
+.water-bar{display:grid;grid-template-columns:1fr 1fr;border-radius:6px;overflow:hidden;border:1px solid var(--border2)}
+.water-seg{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:.65rem}
+.water-seg.a{background:rgba(200,160,32,0.18)}
+.water-seg.b{background:rgba(255,255,255,0.05)}
+.water-seg .w-lbl{font-family:DM Mono,monospace;font-size:10px;color:var(--white-hint);text-transform:uppercase;text-align:center}
+.water-seg .w-amt{font-family:DM Mono,monospace;font-size:15px;font-weight:600;color:var(--white)}
+.water-note{font-size:12px;color:var(--white-hint);margin-top:.5rem;line-height:1.5}
+.steps-list{list-style:none;counter-reset:steps;margin-top:1rem}
+.steps-list li{counter-increment:steps;display:flex;gap:12px;font-size:13px;color:var(--white-muted);line-height:1.6;padding:8px 0;border-bottom:1px solid var(--border)}
+.steps-list li:last-child{border-bottom:none}
+.steps-list li::before{content:counter(steps);font-family:Bebas Neue,sans-serif;font-size:17px;color:var(--gold);min-width:20px;padding-top:1px}
+@media(max-width:600px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{border-right:none;border-bottom:2px solid rgba(44,82,56,0.13);padding:.75rem 0;display:flex;overflow-x:auto}
+  .tab-btn{white-space:nowrap;border-left:none;border-bottom:3px solid transparent;padding:.45rem 1rem}
+  .tab-btn.active{border-bottom-color:var(--green);border-left-color:transparent}
+  .sidebar-label{display:none}
+  .main{padding:1.25rem;max-width:100%}
+  .scale-row{grid-template-columns:1fr 1fr}
+  .juice-output-row{grid-template-columns:1fr 1fr}
+  .header{padding:1rem 1.25rem}
+  .header-logo{height:42px}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <img class="header-logo" src="https://static.wixstatic.com/media/89aa94_f1f2cde6e30e4bc18b1f88e5ded88f3e~mv2.png/v1/fill/w_400,h_160,al_c,q_85,usm_0.66_1.00_0.01/HF-087-500-Branding-Casa-Chow-LOGO-OP-GEEL.png" alt="Casa Chow" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+  <div id="logo-fallback" style="display:none;font-family:Bebas Neue,sans-serif;font-size:30px;letter-spacing:.08em;color:var(--green-dark)">Casa Chow</div>
+  <div class="header-text">
+    <div class="header-brand">Batch Calculator</div>
+    <div class="header-sub">Cocktails &amp; Super juice</div>
+  </div>
+</div>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-label">Cocktails</div>
+    <div id="tabs-cocktail"></div>
+    <div class="sidebar-label second">Super juice</div>
+    <div id="tabs-juice"></div>
+  </nav>
+  <main class="main" id="main"></main>
+</div>
+<script>
+const cocktails=[
+  {id:"lychee",name:"Lychee negroni",tags:["vriezer"],base:10,note:"Voeg kittelbloemen toe aan grote weckpot. Roer door en laat 60 min trekken of tot inhoud paars is (donkerder dan je denkt). Filter bloemen eruit, dan batchen.",ingredients:[{name:"Bombay gin",ml:300},{name:"Lychee likeur",ml:225},{name:"St. Germain",ml:225},{name:"Martini bianco",ml:150},{name:"Suiker siroop",ml:50},{name:"Water",ml:75}],specials:["Snuf zout","Kittelbloemen (15-20 per 10 glazen)"]},
+  {id:"thaibasil",name:"Thai basil smash",tags:[],base:10,note:"Per glas: 75 ml batch + 30 ml limoen + 2 gescheurde blaadjes Thai basil.",ingredients:[{name:"Thai basil infused Hendricks",ml:500},{name:"St. Germain",ml:150},{name:"Suikerwater",ml:100}],specials:["Snuf zout","30 ml limoen + 2 blaadjes per glas"]},
+  {id:"rabarber",name:"Rabarber straissand",tags:[],base:10,note:"Per glas: 95 ml batch + 10 ml citroen + foamee.",ingredients:[{name:"Vodka",ml:500},{name:"Rabarber aardbei cordial",ml:450}],specials:["Snuf zout","10 ml citroen + foamee per glas"]},
+  {id:"applepear",name:"Apple pear fizz",tags:[],base:10,note:"Per glas: 85 ml batch + 15 ml citroen + bruiswater.",ingredients:[{name:"Busnel Calvados",ml:450},{name:"St. Germain",ml:250},{name:"Peersiroop",ml:250}],specials:["Snuf zout","15 ml citroen + bruiswater per glas"]},
+  {id:"sultans",name:"Sultans of swing",tags:["vriezer"],base:10,note:"Per glas: 90 ml batch + Maraschino kers.",ingredients:[{name:"Reposado tequila",ml:400},{name:"PX Sherry",ml:350},{name:"Water",ml:75},{name:"Suiker siroop",ml:50}],specials:["5 dashes Angostura bitters (per 10 glazen)","Snuf zout","Maraschino kers per glas"]},
+  {id:"coco",name:"Coco jambo",tags:[],base:10,note:"Per glas: 80 ml batch + 30 ml limoen.",ingredients:[{name:"Malibu",ml:500},{name:"Perziklikeur",ml:200},{name:"Suikersiroop",ml:100}],specials:["Snuf zout","30 ml limoen per glas"]}
+];
+const juices=[
+  {id:"limoen",name:"Limoen acid",citricFactor:0.66,malicFactor:0.33,waterFactor:16.66,
+   note:"Bestellen: brouwland.com - Appelzuur (malic acid). Vacuumeer per 700 ml in de vriezer en sticker!",
+   steps:["Schil limoenen met een dunschiller, zo min mogelijk wit (pith/merg).","Doe de schillen in een Chinees bakje (grote batch? Gebruik een schoenendoos).","Weeg de schillen nauwkeurig af op de espresso weegschaal.","Voeg het citroenzuur en appelzuur toe aan de schillen in het bakje.","Zet een timer op 1 uur 45 min (max 2 uur). Schud regelmatig - de zuren trekken vocht uit de schillen (oleo citrate).","Pers de geschilde limoenen en bewaar het sap.","Zet 500 ml van het totale water apart, bewaar de rest.","Blend de blender schoon met kraanwater en gooi weg. Gebruik NIET de gereserveerde 500 ml.","Doe schillen + zuren in de blender. Was het bakje schoon met een deel van de 500 ml en voeg ook de overige 500 ml toe.","Blend ca. 10 seconden zodat schillen in kleine stukken zijn - niet te lang, anders te fijn om te zeven.","Leg grote zeef op de maatbeker. Schenk het geblende mengsel door de zeef bij het overige water.","Gebruik het limoensap om de blender schoon te maken, schenk ook dit door de zeef.","Gebruik een finestrainer van de bar om de limoen acid nog eens over te schenken - haalt laatste pulp eruit.","Vacuumeer per 700 ml, vries in en sticker!"]},
+  {id:"citroen",name:"Citroen acid",citricFactor:1.0,malicFactor:0,waterFactor:16.66,
+   note:"Bestellen: naturalspices.nl - Citroenzuur E330. Vacuumeer per 700 ml in de vriezer en sticker!",
+   steps:["Schil citroenen met een dunschiller, zo min mogelijk wit (pith/merg).","Doe de schillen in een Chinees bakje (grote batch? Gebruik een schoenendoos).","Weeg de schillen nauwkeurig af op de espresso weegschaal.","Voeg het citroenzuur toe aan de schillen in het bakje.","Zet een timer op 1 uur 45 min (max 2 uur). Schud regelmatig - de zuren trekken vocht uit de schillen (oleo citrate).","Pers de geschilde citroenen en bewaar het sap.","Zet 500 ml van het totale water apart, bewaar de rest.","Blend de blender schoon met kraanwater en gooi weg. Gebruik NIET de gereserveerde 500 ml.","Doe schillen + zuren in de blender. Was het bakje schoon met een deel van de 500 ml en voeg ook de overige 500 ml toe.","Blend ca. 10 seconden zodat schillen in kleine stukken zijn - niet te lang, anders te fijn om te zeven.","Leg grote zeef op de maatbeker. Schenk het geblende mengsel door de zeef bij het overige water.","Gebruik het citroensap om de blender schoon te maken, schenk ook dit door de zeef.","Gebruik een finestrainer van de bar om de citroen acid nog eens over te schenken - haalt laatste pulp eruit.","Vacuumeer per 700 ml, vries in en sticker!"]}
+];
+let mode="cocktail",activeIdx=0,scale=1.0,juiceShellWeight=100;
+function r(n,d=1){return Math.round(n*Math.pow(10,d))/Math.pow(10,d)}
+function fmtML(ml){return Math.round(ml)+" ml"}
+function renderTabs(){
+  document.getElementById("tabs-cocktail").innerHTML=cocktails.map((c,i)=>"<button class='tab-btn"+(mode==="cocktail"&&i===activeIdx?" active":"")+"' onclick='setCocktail("+i+")'>"+c.name+c.tags.map(t=>"<span class='tab-badge'>"+t+"</span>").join("")+"</button>").join("");
+  document.getElementById("tabs-juice").innerHTML=juices.map((j,i)=>"<button class='tab-btn"+(mode==="juice"&&i===activeIdx?" active":"")+"' onclick='setJuice("+i+")'>"+j.name+"</button>").join("");
+}
+function setCocktail(i){mode="cocktail";activeIdx=i;scale=1.0;renderTabs();renderCocktail()}
+function setJuice(i){mode="juice";activeIdx=i;juiceShellWeight=100;renderTabs();renderJuice()}
+function renderCocktail(){
+  const c=cocktails[activeIdx];
+  const glasses=r(c.base*scale,1);
+  const baseTotalMl=c.ingredients.reduce((s,i)=>s+i.ml,0);
+  const scaledTotal=r(baseTotalMl*scale);
+  const ingRows=c.ingredients.map((ing,idx)=>"<tr><td>"+ing.name+"</td><td><div class='ing-input-wrap'><input class='ing-input' type='number' min='0' step='any' value='"+r(ing.ml*scale)+"' data-idx='"+idx+"' data-base='"+ing.ml+"' oninput='lockToIng(this)'><span class='ing-unit'>ml</span></div></td></tr>").join("");
+  const specialRows=c.specials.map(s=>"<tr><td class='ing-special'>"+s+"</td><td></td></tr>").join("");
+  document.getElementById("main").innerHTML="<div class='page-title'>"+c.name+"</div><div class='page-sub'>basisrecept x "+c.base+" glazen</div><div class='scale-row'><div class='scale-field'><label>Aantal glazen</label><input type='number' min='1' step='1' id='inp-glasses' value='"+glasses+"' oninput='scaleByGlasses(this.value)'></div><div class='scale-field'><label>Schaalfactor</label><input type='number' min='0.1' step='0.5' id='inp-factor' value='"+r(scale)+"' oninput='scaleByFactor(this.value)'></div><div class='scale-field'><label>Totaal batch</label><input type='number' min='0' step='any' id='inp-total' value='"+scaledTotal+"' oninput='scaleByTotal(this.value,"+baseTotalMl+")'></div></div><p class='hint-text'>Pas ook een ingredient hieronder aan - de rest past automatisch mee.</p><table class='ing-table'><thead><tr><th>Ingredient</th><th style='text-align:right'>Hoeveelheid</th></tr></thead><tbody>"+ingRows+specialRows+"</tbody></table>"+(c.note?"<div class='note-box'>"+c.note+"</div>":"");
+}
+function renderJuice(){
+  const j=juices[activeIdx];const w=juiceShellWeight;
+  const citric=r(w*j.citricFactor,1);
+  const malic=j.malicFactor>0?r(w*j.malicFactor,1):0;
+  const waterTotal=Math.round(w*j.waterFactor);
+  const water500=Math.min(500,waterTotal);
+  const waterRest=Math.max(0,waterTotal-500);
+  document.getElementById("main").innerHTML="<div class='page-title'>"+j.name+"</div><div class='page-sub'>vul schilgewicht in - hoeveelheden worden automatisch berekend</div><div class='scale-row' style='grid-template-columns:1fr'><div class='scale-field'><label>Gewicht schillen (g)</label><input type='number' min='1' step='1' id='inp-shell' value='"+w+"' oninput='updateJuice(this.value)'></div></div><div class='juice-section-title'>Zuren</div><div class='juice-output-row'><div class='juice-output'><label>Citroenzuur</label><div class='val' id='j-citric'>"+citric+" g</div></div>"+(j.malicFactor>0?"<div class='juice-output'><label>Appelzuur (malic acid)</label><div class='val' id='j-malic'>"+malic+" g</div></div>":"")+"</div><div class='juice-section-title'>Water</div><div class='water-block'><div class='water-label-row'><span>Verdeling totaal water</span><span class='water-total' id='j-water'>Totaal: "+fmtML(waterTotal)+"</span></div><div class='water-bar'><div class='water-seg a'><span class='w-lbl'>Bij schillen (blender)</span><span class='w-amt' id='j-w-blend'>"+fmtML(water500)+"</span></div><div class='water-seg b'><span class='w-lbl'>Overig water</span><span class='w-amt' id='j-w-rest'>"+fmtML(waterRest)+"</span></div></div><div class='water-note'>Zet 500 ml apart voor de blender. De rest gaat in de maatbeker waar je doorheen zeeft.</div></div><div class='juice-section-title'>Werkwijze</div><ol class='steps-list'>"+j.steps.map(s=>"<li>"+s+"</li>").join("")+"</ol><div class='note-box' style='margin-top:1rem'>"+j.note+"</div>";
+}
+function updateJuice(val){
+  const w=parseFloat(val);if(isNaN(w)||w<=0)return;
+  juiceShellWeight=w;const j=juices[activeIdx];
+  const citric=r(w*j.citricFactor,1);const malic=j.malicFactor>0?r(w*j.malicFactor,1):0;
+  const waterTotal=Math.round(w*j.waterFactor);const water500=Math.min(500,waterTotal);const waterRest=Math.max(0,waterTotal-500);
+  const el=id=>document.getElementById(id);
+  if(el("j-citric"))el("j-citric").textContent=citric+" g";
+  if(el("j-malic"))el("j-malic").textContent=malic+" g";
+  if(el("j-water"))el("j-water").textContent="Totaal: "+fmtML(waterTotal);
+  if(el("j-w-blend"))el("j-w-blend").textContent=fmtML(water500);
+  if(el("j-w-rest"))el("j-w-rest").textContent=fmtML(waterRest);
+}
+function scaleByGlasses(val){const v=parseFloat(val);if(!isNaN(v)&&v>0){scale=v/cocktails[activeIdx].base;syncInputs()}}
+function scaleByFactor(val){const v=parseFloat(val);if(!isNaN(v)&&v>0){scale=v;syncInputs()}}
+function scaleByTotal(val,baseTotalMl){const v=parseFloat(val);if(!isNaN(v)&&v>0&&baseTotalMl>0){scale=v/baseTotalMl;syncInputs(true)}}
+function lockToIng(input){const v=parseFloat(input.value);const baseMl=parseFloat(input.dataset.base);if(!isNaN(v)&&v>0&&baseMl>0){scale=v/baseMl;syncInputs(false,parseInt(input.dataset.idx))}}
+function syncInputs(skipTotal=false,skipIngIdx=-1){
+  const c=cocktails[activeIdx];
+  const glasses=r(c.base*scale,1);const baseTotalMl=c.ingredients.reduce((s,i)=>s+i.ml,0);const scaledTotal=r(baseTotalMl*scale);
+  const gEl=document.getElementById("inp-glasses");const fEl=document.getElementById("inp-factor");const tEl=document.getElementById("inp-total");
+  if(gEl)gEl.value=glasses;if(fEl)fEl.value=r(scale);if(!skipTotal&&tEl)tEl.value=scaledTotal;
+  document.querySelectorAll(".ing-input").forEach(inp=>{const idx=parseInt(inp.dataset.idx);if(idx===skipIngIdx)return;inp.value=r(c.ingredients[idx].ml*scale);});
+}
+renderTabs();renderCocktail();
+</script>
+</body>
+</html>
